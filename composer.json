@@ -25,6 +25,3 @@
       "MercadoPago\\": ["src/MercadoPago/", "tests/"]
     }
   }
-
-
-}
