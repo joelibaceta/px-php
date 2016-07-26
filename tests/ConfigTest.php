@@ -1,6 +1,7 @@
 <?php
 
 namespace MercadoPago;
+use Exception;
 
 class ConfigTest
     extends \PHPUnit_Framework_TestCase
@@ -16,9 +17,7 @@ class ConfigTest
     }
 
     /**
-     * @covers                   Config::__construct()
      * @covers                   Config::load()
-     * @covers                   Config::get()
      */
     public function testDefaultSettings()
     {
@@ -32,7 +31,6 @@ class ConfigTest
     }
 
     /**
-     * @covers                   Config::__construct()
      * @covers                   Config::load()
      * @covers                   Config::set()
      * @covers                   Config::get()
@@ -45,7 +43,6 @@ class ConfigTest
     }
 
     /**
-     * @covers                   Config::__construct()
      * @covers                   Config::load()
      * @covers                   Config::get()
      */
@@ -56,7 +53,6 @@ class ConfigTest
     }
 
     /**
-     * @covers            Config::__construct()
      * @covers            Config::load()
      * @covers            Config::configure()
      * @covers            Config::get()
@@ -78,7 +74,6 @@ class ConfigTest
     }
 
     /**
-     * @covers Config::__construct()
      * @covers Config::load()
      * @covers Config::get()
      */
@@ -91,7 +86,6 @@ class ConfigTest
     }
 
     /**
-     * @covers Config::__construct()
      * @covers Config::load()
      * @covers Config::get()
      */

@@ -19,7 +19,7 @@ class Config
                 'APP_ID'        => '',
                 'ACCESS_TOKEN'  => '',
                 'REFRESH_TOKEN' => '',
-                'sandbox_mode' => true,
+                'sandbox_mode'  => true,
         ];
     }
 
@@ -61,5 +61,19 @@ class Config
         return $parser;
     }
 
-    
+//    public function getToken()
+//    {
+//
+//        $data = ['grant_type'    => 'client_credentials',
+//                 'client_id'     => '446950613712741',
+//                 'client_secret' => '0WX05P8jtYqCtiQs6TH1d9SyOJ04nhEv'];
+//        RestClient::setHttpParam('address', $this->get('base_url'));
+//        //RestClient::setHttpParam('use_ssl', true);
+//        //RestClient::setHttpParam('ca_file', dirname(__FILE__) . '/mercadopago/ca-bundle.crt');
+//        //$response = RestClient::post("/oauth/token", ['json_data' => json_encode($data)]);
+//        $response = RestClient::get("/item_categories");
+//        return $response['body'];
+//    }
+
+
 }
