@@ -9,7 +9,7 @@ use Exception;
 class RestClient
 {
 
-    const VERB_ARRAY = [
+    protected static $_verbArray = [
         'get'    => 'GET',
         'post'   => 'POST',
         'put'    => 'PUT',
@@ -66,7 +66,7 @@ class RestClient
     {
         $method = key($options);
         $requestPath = reset($options);
-        $verb = self::VERB_ARRAY[$method];
+        $verb = self::$_verbArray[$method];
 
         $headers = self::getArrayValue($options, 'headers');
         $url_query = self::getArrayValue($options, 'url_query');
