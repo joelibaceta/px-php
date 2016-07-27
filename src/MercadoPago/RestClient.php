@@ -16,37 +16,25 @@ class RestClient
         'delete' => 'DELETE'
     ];
 
-    private static $_defaultParams = [];
+    protected $_httpRequest = null;
+    protected static $_defaultParams = [];
 
-    const API_BASE_URL = "https://api.mercadopago.com";
-
-    private static function get_connect($uri, $method)
+    public function __construct()
     {
-        if (!extension_loaded("curl")) {
-            throw new Exception("cURL extension not found. You need to enable cURL in your php.ini or another configuration you have.");
-        }
-
-        $connect = curl_init($uri);
-
-        //curl_setopt($connect, CURLOPT_USERAGENT, "MercadoPago Magento-1.9.x-transparent Cart v1.0.2");
-        curl_setopt($connect, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($connect, CURLOPT_CUSTOMREQUEST, $method);
-
-
-        return $connect;
+        $this->_httpRequest = new Http\CurlRequest();
     }
 
-    private static function set_headers(&$connect, $headers)
+    protected static function set_headers(Http\HttpRequest $connect, $headers)
     {
         $default_header = ['Content-Type' => 'application/json'];
-        if (count($headers) > 0) {
+        if ($headers) {
             $default_header = array_merge($default_header, $headers);
         }
 
-        curl_setopt($connect, CURLOPT_HTTPHEADER, $default_header);
+        $connect->setOption(CURLOPT_HTTPHEADER, $default_header);
     }
 
-    private static function set_data(&$connect, $data, $content_type = '')
+    protected static function set_data(Http\HttpRequest $connect, $data, $content_type = '')
     {
         if ($content_type == "application/json") {
             if (gettype($data) == "string") {
@@ -63,10 +51,18 @@ class RestClient
             }
         }
 
-        curl_setopt($connect, CURLOPT_POSTFIELDS, $data);
+        $connect->setOption(CURLOPT_POSTFIELDS, $data);
     }
 
-    private function exec($options)
+    public function setHttpRequest($request) {
+        $this->_httpRequest = $request;
+    }
+
+    public function getHttpRequest() {
+        return $this->_httpRequest;
+    }
+
+    protected function exec($options)
     {
         $method = key($options);
         $requestPath = reset($options);
@@ -74,115 +70,104 @@ class RestClient
 
         $headers = self::getArrayValue($options, 'headers');
         $url_query = self::getArrayValue($options, 'url_query');
-        $form_data = self::getArrayValue($options, 'form_data');
-        $json_data = self::getArrayValue($options, 'json_data');
-        $default_http_params = self::$_defaultParams;
+        $formData = self::getArrayValue($options, 'form_data');
+        $jsonData = self::getArrayValue($options, 'json_data');
+        $defaultHttpParams = self::$_defaultParams;
 
-        $connection_params = $default_http_params;
+        $connectionParams = $defaultHttpParams;
         $query = '';
-        if (count($url_query) > 0) {
+        if ($url_query > 0) {
             $query = http_build_query($url_query);
         }
-        $address = self::getArrayValue($connection_params, 'address');
+        $address = self::getArrayValue($connectionParams, 'address');
         $uri = $address . $requestPath;
         if ($query != '') {
             $uri .= '?' . $query;
         }
 
-        $connect = self::get_connect($uri, $verb);
-//        curl_setopt($connect, CURLOPT_RETURNTRANSFER, 1);
-//        curl_setopt($connect, CURLOPT_VERBOSE, 1);
-//        curl_setopt($connect, CURLOPT_HEADER, 1);
+        $connect = $this->getHttpRequest();
+        $connect->setOption(CURLOPT_URL, $uri);
+
+        //curl_setopt($connect, CURLOPT_USERAGENT, "MercadoPago Magento-1.9.x-transparent Cart v1.0.2");
+        $connect->setOption(CURLOPT_RETURNTRANSFER, true);
+        $connect->setOption(CURLOPT_CUSTOMREQUEST, $verb);
+
         self::set_headers($connect, $headers);
 
-        $proxy_addr = self::getArrayValue($connection_params, 'proxy_addr');
-        $proxy_port = self::getArrayValue($connection_params, 'proxy_port');
-        if (!empty($proxy_addr)) {
-            curl_setopt($connect, CURLOPT_PROXY, $proxy_addr);
-            curl_setopt($connect, CURLOPT_PROXYPORT, $proxy_port);
+        $proxyAddress = self::getArrayValue($connectionParams, 'proxy_addr');
+        $proxyPort = self::getArrayValue($connectionParams, 'proxy_port');
+        if (!empty($proxyAddress)) {
+            $connect->setOption(CURLOPT_PROXY, $proxyAddress);
+            $connect->setOption(CURLOPT_PROXYPORT, $proxyPort);
         }
-        if (self::getArrayValue($connection_params, 'use_ssl')) {
-            curl_setopt($connect, CURLOPT_SSL_VERIFYPEER, self::getArrayValue($connection_params, 'use_ssl'));
+        if ($useSsl = self::getArrayValue($connectionParams, 'use_ssl')) {
+            $connect->setOption(CURLOPT_SSL_VERIFYPEER, $useSsl);
         }
-        if (self::getArrayValue($connection_params, 'ssl_version')) {
-            curl_setopt($connect, CURLOPT_SSLVERSION, self::getArrayValue($connection_params, 'ssl_version'));
+        if ($sslVersion = self::getArrayValue($connectionParams, 'ssl_version')) {
+            $connect->setOption(CURLOPT_SSLVERSION, $sslVersion);
         }
-        if (self::getArrayValue($connection_params, 'verify_mode')) {
-            curl_setopt($connect, CURLOPT_SSL_VERIFYHOST, self::getArrayValue($connection_params, 'verify_mode'));
+        if ($verifyMode = self::getArrayValue($connectionParams, 'verify_mode')) {
+            $connect->setOption(CURLOPT_SSL_VERIFYHOST, $verifyMode);
         }
-        if (self::getArrayValue($connection_params, 'ca_file')) {
-            curl_setopt($connect, CURLOPT_CAPATH, self::getArrayValue($connection_params, 'ca_file'));
-        }
-
-        if ($form_data) {
-            self::set_data($connect, $form_data);
-        }
-        if ($json_data) {
-            self::set_data($connect, $json_data, "application/json");
+        if ($caFile = self::getArrayValue($connectionParams, 'ca_file')) {
+            $connect->setOption(CURLOPT_CAPATH, $caFile);
         }
 
-        $api_result = curl_exec($connect);
-        $api_http_code = curl_getinfo($connect, CURLINFO_HTTP_CODE);
-        if ($api_result === false) {
-            throw new Exception (curl_error($connect));
+        if ($formData) {
+            self::set_data($connect, $formData);
+        }
+        if ($jsonData) {
+            self::set_data($connect, $jsonData, "application/json");
+        }
+
+        $apiResult = $connect->execute();
+        $apiHttpCode = $connect->getInfo(CURLINFO_HTTP_CODE);
+        if ($apiResult === false) {
+            throw new Exception ($connect->error());
         }
         $response['response'] = [];
-        if ($api_http_code == "200" || $api_http_code == "201") {
-            $response['response'] = json_decode($api_result, true);
+        if ($apiHttpCode == "200" || $apiHttpCode == "201") {
+            $response['response'] = json_decode($apiResult, true);
         }
 
-        $response['code'] = $api_http_code;
-        /*if ($response['status'] >= 400) {
-            $message = $response['response']['message'];
-            if (isset ($response['response']['cause'])) {
-                if (isset ($response['response']['cause']['code']) && isset ($response['response']['cause']['description'])) {
-                    $message .= " - ".$response['response']['cause']['code'].': '.$response['response']['cause']['description'];
-                } else if (is_array ($response['response']['cause'])) {
-                    foreach ($response['response']['cause'] as $cause) {
-                        $message .= " - ".$cause['code'].': '.$cause['description'];
-                    }
-                }
-            }
+        $response['code'] = $apiHttpCode;
 
-            throw new Exception ($message, $response['status']);
-        }*/
-
-        curl_close($connect);
+        $connect->error();
 
         return ['code' => $response['code'], 'body' => $response['response']];
     }
 
-    public static function get($uri, $options = [])
+    public function get($uri, $options = [])
     {
-        return self::exec(array_merge(['get' => $uri], $options));
+        return $this->exec(array_merge(['get' => $uri], $options));
     }
 
-    public static function post($uri, $options = [])
+    public function post($uri, $options = [])
     {
-        return self::exec(array_merge(['post' => $uri], $options));
+        return $this->exec(array_merge(['post' => $uri], $options));
     }
 
-    public static function put($uri, $options = [])
+    public function put($uri, $options = [])
     {
-        return self::exec(array_merge(['put' => $uri], $options));
+        return $this->exec(array_merge(['put' => $uri], $options));
     }
 
-    public static function delete($uri, $options = [])
+    public function delete($uri, $options = [])
     {
-        return self::exec(array_merge(['delete' => $uri], $options));
+        return $this->exec(array_merge(['delete' => $uri], $options));
     }
 
-    public static function setHttpParam($param, $value)
+    public function setHttpParam($param, $value)
     {
         self::$_defaultParams[$param] = $value;
     }
 
-    private static function getArrayValue($array, $key)
+    private function getArrayValue($array, $key)
     {
         if (array_key_exists($key, $array)) {
             return $array[$key];
         } else {
-            return null;
+            return false;
         }
     }
 }
