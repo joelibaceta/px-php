@@ -66,12 +66,11 @@ class Config
     public function set($key, $value)
     {
         parent::set($key, $value);
-        // Note: value of $name is case sensitive.
         if ($this->get('CLIENT_ID') != "" && $this->get('CLIENT_SECRET') != "") {
             $response = $this->getToken();
-            if ($response) {
-                $this->set('ACCESS_TOKEN', $response['access_token']);
-                $this->set('REFRESH_TOKEN', $response['refresh_token']);
+            if (isset($response['access_token']) && isset($response['refresh_token'])) {
+                parent::set('ACCESS_TOKEN', $response['access_token']);
+                parent::set('REFRESH_TOKEN', $response['refresh_token']);
             }
         }
     }
@@ -80,13 +79,11 @@ class Config
     {
         $restClient = new RestClient();
         $data = ['grant_type'    => 'client_credentials',
-                 'client_id'     => '446950613712741',
-                 'client_secret' => '0WX05P8jtYqCtiQs6TH1d9SyOJ04nhEv'];
+                 'client_id'     => $this->get('CLIENT_ID'),
+                 'client_secret' => $this->get('CLIENT_SECRET')];
         $restClient->setHttpParam('address', $this->get('base_url'));
         $restClient->setHttpParam('use_ssl', true);
-        //RestClient::setHttpParam('ca_file', dirname(__FILE__) . '/mercadopago/ca-bundle.crt');
         $response = $restClient->post("/oauth/token", ['json_data' => json_encode($data)]);
-        //$response = RestClient::get("/item_categories");
         return $response['body'];
     }
 
