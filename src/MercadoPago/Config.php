@@ -5,14 +5,27 @@ use Exception;
 use MercadoPago\Config\Json;
 use MercadoPago\Config\Yaml;
 
+/**
+ * Config Class Doc Comment
+ *
+ * @package MercadoPago
+ */
 class Config
     extends Config\AbstractConfig
 {
-    private $supportedFileParsers = array(
+    /**
+     * Available parsers
+     * @var array
+     */
+    private $_supportedFileParsers = [
         'MercadoPago\\Config\\Json',
         'MercadoPago\\Config\\Yaml',
-    );
+    ];
 
+    /**
+     * Default values
+     * @return array
+     */
     protected function getDefaults()
     {
         return ['base_url'      => 'https://api.mercadopago.com',
@@ -25,37 +38,52 @@ class Config
         ];
     }
 
+    /**
+     * @param null $path
+     *
+     * Static load method
+     * @return static
+     */
     public static function load($path = null)
     {
         return new static($path);
     }
 
+    /**
+     * Config constructor.
+     *
+     * @param null $path
+     */
     public function __construct($path = null)
     {
         $this->data = [];
         if (is_file($path)) {
-            // Get file information
             $info = pathinfo($path);
             $parts = explode('.', $info['basename']);
             $extension = array_pop($parts);
-            $parser = $this->getParser($extension);
-            // Try and load file
+            $parser = $this->_getParser($extension);
             $this->data = array_replace_recursive($this->data, (array)$parser->parse($path));
         }
         parent::__construct($this->data);
     }
 
-    private function getParser($extension)
+    /**
+     * @param $extension
+     *
+     * Get Parser depending on extension
+     * @return null
+     * @throws Exception
+     */
+    private function _getParser($extension)
     {
         $parser = null;
-        foreach ($this->supportedFileParsers as $fileParser) {
+        foreach ($this->_supportedFileParsers as $fileParser) {
             $tempParser = new  $fileParser;
             if (in_array($extension, $tempParser->getSupportedExtensions($extension))) {
                 $parser = $tempParser;
                 continue;
             }
         }
-        // If none exist, then throw an exception
         if ($parser === null) {
             throw new Exception('Unsupported configuration format');
         }
@@ -63,6 +91,11 @@ class Config
         return $parser;
     }
 
+    /**
+     * Set config value
+     * @param $key
+     * @param $value
+     */
     public function set($key, $value)
     {
         parent::set($key, $value);
@@ -75,6 +108,10 @@ class Config
         }
     }
 
+    /**
+     * Obtain token with key and secret
+     * @return mixed
+     */
     public function getToken()
     {
         $restClient = new RestClient();

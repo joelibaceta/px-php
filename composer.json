@@ -22,6 +22,10 @@
   },
   "autoload": {
     "psr-4": {
-      "MercadoPago\\": ["src/MercadoPago/", "tests/"]
+      "MercadoPago\\": [
+        "src/MercadoPago/",
+        "tests/"
+      ]
     }
   }
+}

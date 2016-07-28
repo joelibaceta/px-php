@@ -62,13 +62,11 @@ class ConfigTest
         $config = Config::load();
         $config->configure(['base_url'      => 'https://custom.com',
                             'CLIENT_ID'     => 'RANDOM_ID',
-                            'CLIENT_SECRET' => 'RANDOM_SECRET',
                             'APP_ID'        => 'APP_ID',
                             'ACCESS_TOKEN'  => 'RANDOM_TOKEN']
         );
         $this->assertEquals($config->get('base_url'), 'https://custom.com');
         $this->assertEquals($config->get('CLIENT_ID'), 'RANDOM_ID');
-        $this->assertEquals($config->get('CLIENT_SECRET'), 'RANDOM_SECRET');
         $this->assertEquals($config->get('APP_ID'), 'APP_ID');
         $this->assertEquals($config->get('ACCESS_TOKEN'), 'RANDOM_TOKEN');
     }

@@ -45,6 +45,10 @@ class RestClientTest
      */
     public function testDoPostRequest()
     {
+        // Stop here and mark this test as incomplete.
+        $this->markTestIncomplete(
+            'This test has not been implemented yet.'
+        );
         //RestClient::post("/dummy_post", ['json_data' => 'hello world']);
     }
 
@@ -54,6 +58,10 @@ class RestClientTest
      */
     public function testDoPutRequest()
     {
+        // Stop here and mark this test as incomplete.
+        $this->markTestIncomplete(
+            'This test has not been implemented yet.'
+        );
         //RestClient::put("/dummy_put", ['json_data' => 'hello world']);
     }
 
@@ -63,6 +71,10 @@ class RestClientTest
      */
     public function testDoDeleteRequest()
     {
+        // Stop here and mark this test as incomplete.
+        $this->markTestIncomplete(
+            'This test has not been implemented yet.'
+        );
         //RestClient::delete("/dummy_delete", ['id' => '15']);
     }
 
@@ -71,6 +83,10 @@ class RestClientTest
      */
     public function testDoCustomHeadersRequest()
     {
+        // Stop here and mark this test as incomplete.
+        $this->markTestIncomplete(
+            'This test has not been implemented yet.'
+        );
     }
 
     /**
@@ -78,6 +94,10 @@ class RestClientTest
      */
     public function testDoFailedRequest()
     {
+        // Stop here and mark this test as incomplete.
+        $this->markTestIncomplete(
+            'This test has not been implemented yet.'
+        );
     }
 
     /**
@@ -85,6 +105,10 @@ class RestClientTest
      */
     public function testDoForbbidenRequest()
     {
+        // Stop here and mark this test as incomplete.
+        $this->markTestIncomplete(
+            'This test has not been implemented yet.'
+        );
     }
 
     /**
@@ -92,6 +116,10 @@ class RestClientTest
      */
     public function testDoNotFoundRequest()
     {
+        // Stop here and mark this test as incomplete.
+        $this->markTestIncomplete(
+            'This test has not been implemented yet.'
+        );
     }
 
 

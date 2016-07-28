@@ -2,9 +2,20 @@
 namespace MercadoPago\Config;
 use Exception;
 
+/**
+ * Json Class Doc Comment
+ *
+ * @package MercadoPago\Config
+ */
 class Json implements ParserInterface
 {
 
+    /**
+     * @param $path
+     *
+     * @return mixed
+     * @throws Exception
+     */
     public function parse($path)
     {
         $data = json_decode(file_get_contents($path), true);
@@ -22,7 +33,10 @@ class Json implements ParserInterface
         }
         return $data;
     }
-    
+
+    /**
+     * @return array
+     */
     public function getSupportedExtensions()
     {
         return array('json');

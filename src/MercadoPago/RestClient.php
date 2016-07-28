@@ -9,6 +9,9 @@ use Exception;
 class RestClient
 {
 
+    /**
+     *
+     */
     const VERB_ARRAY = [
         'get'    => 'GET',
         'post'   => 'POST',
@@ -16,15 +19,28 @@ class RestClient
         'delete' => 'DELETE'
     ];
 
-    protected $_httpRequest = null;
-    protected static $_defaultParams = [];
+    /**
+     * @var Http\CurlRequest|null
+     */
+    protected $httpRequest = null;
+    /**
+     * @var array
+     */
+    protected static $defaultParams = [];
 
+    /**
+     * RestClient constructor.
+     */
     public function __construct()
     {
-        $this->_httpRequest = new Http\CurlRequest();
+        $this->httpRequest = new Http\CurlRequest();
     }
 
-    protected static function set_headers(Http\HttpRequest $connect, $headers)
+    /**
+     * @param Http\HttpRequest $connect
+     * @param                  $headers
+     */
+    protected function setHeaders(Http\HttpRequest $connect, $headers)
     {
         $default_header = ['Content-Type' => 'application/json'];
         if ($headers) {
@@ -34,7 +50,14 @@ class RestClient
         $connect->setOption(CURLOPT_HTTPHEADER, $default_header);
     }
 
-    protected static function set_data(Http\HttpRequest $connect, $data, $content_type = '')
+    /**
+     * @param Http\HttpRequest $connect
+     * @param                  $data
+     * @param string           $content_type
+     *
+     * @throws Exception
+     */
+    protected function setData(Http\HttpRequest $connect, $data, $content_type = '')
     {
         if ($content_type == "application/json") {
             if (gettype($data) == "string") {
@@ -54,32 +77,44 @@ class RestClient
         $connect->setOption(CURLOPT_POSTFIELDS, $data);
     }
 
+    /**
+     * @param $request
+     */
     public function setHttpRequest($request) {
-        $this->_httpRequest = $request;
+        $this->httpRequest = $request;
     }
 
+    /**
+     * @return Http\CurlRequest|null
+     */
     public function getHttpRequest() {
-        return $this->_httpRequest;
+        return $this->httpRequest;
     }
 
+    /**
+     * @param $options
+     *
+     * @return array
+     * @throws Exception
+     */
     protected function exec($options)
     {
         $method = key($options);
         $requestPath = reset($options);
         $verb = self::VERB_ARRAY[$method];
 
-        $headers = self::getArrayValue($options, 'headers');
-        $url_query = self::getArrayValue($options, 'url_query');
-        $formData = self::getArrayValue($options, 'form_data');
-        $jsonData = self::getArrayValue($options, 'json_data');
-        $defaultHttpParams = self::$_defaultParams;
+        $headers = self::_getArrayValue($options, 'headers');
+        $url_query = self::_getArrayValue($options, 'url_query');
+        $formData = self::_getArrayValue($options, 'form_data');
+        $jsonData = self::_getArrayValue($options, 'json_data');
+        $defaultHttpParams = self::$defaultParams;
 
         $connectionParams = $defaultHttpParams;
         $query = '';
         if ($url_query > 0) {
             $query = http_build_query($url_query);
         }
-        $address = self::getArrayValue($connectionParams, 'address');
+        $address = self::_getArrayValue($connectionParams, 'address');
         $uri = $address . $requestPath;
         if ($query != '') {
             $uri .= '?' . $query;
@@ -92,32 +127,32 @@ class RestClient
         $connect->setOption(CURLOPT_RETURNTRANSFER, true);
         $connect->setOption(CURLOPT_CUSTOMREQUEST, $verb);
 
-        self::set_headers($connect, $headers);
+        self::setHeaders($connect, $headers);
 
-        $proxyAddress = self::getArrayValue($connectionParams, 'proxy_addr');
-        $proxyPort = self::getArrayValue($connectionParams, 'proxy_port');
+        $proxyAddress = self::_getArrayValue($connectionParams, 'proxy_addr');
+        $proxyPort = self::_getArrayValue($connectionParams, 'proxy_port');
         if (!empty($proxyAddress)) {
             $connect->setOption(CURLOPT_PROXY, $proxyAddress);
             $connect->setOption(CURLOPT_PROXYPORT, $proxyPort);
         }
-        if ($useSsl = self::getArrayValue($connectionParams, 'use_ssl')) {
+        if ($useSsl = self::_getArrayValue($connectionParams, 'use_ssl')) {
             $connect->setOption(CURLOPT_SSL_VERIFYPEER, $useSsl);
         }
-        if ($sslVersion = self::getArrayValue($connectionParams, 'ssl_version')) {
+        if ($sslVersion = self::_getArrayValue($connectionParams, 'ssl_version')) {
             $connect->setOption(CURLOPT_SSLVERSION, $sslVersion);
         }
-        if ($verifyMode = self::getArrayValue($connectionParams, 'verify_mode')) {
+        if ($verifyMode = self::_getArrayValue($connectionParams, 'verify_mode')) {
             $connect->setOption(CURLOPT_SSL_VERIFYHOST, $verifyMode);
         }
-        if ($caFile = self::getArrayValue($connectionParams, 'ca_file')) {
+        if ($caFile = self::_getArrayValue($connectionParams, 'ca_file')) {
             $connect->setOption(CURLOPT_CAPATH, $caFile);
         }
 
         if ($formData) {
-            self::set_data($connect, $formData);
+            self::setData($connect, $formData);
         }
         if ($jsonData) {
-            self::set_data($connect, $jsonData, "application/json");
+            self::setData($connect, $jsonData, "application/json");
         }
 
         $apiResult = $connect->execute();
@@ -137,32 +172,70 @@ class RestClient
         return ['code' => $response['code'], 'body' => $response['response']];
     }
 
+    /**
+     * @param       $uri
+     * @param array $options
+     *
+     * @return array
+     * @throws Exception
+     */
     public function get($uri, $options = [])
     {
         return $this->exec(array_merge(['get' => $uri], $options));
     }
 
+    /**
+     * @param       $uri
+     * @param array $options
+     *
+     * @return array
+     * @throws Exception
+     */
     public function post($uri, $options = [])
     {
         return $this->exec(array_merge(['post' => $uri], $options));
     }
 
+    /**
+     * @param       $uri
+     * @param array $options
+     *
+     * @return array
+     * @throws Exception
+     */
     public function put($uri, $options = [])
     {
         return $this->exec(array_merge(['put' => $uri], $options));
     }
 
+    /**
+     * @param       $uri
+     * @param array $options
+     *
+     * @return array
+     * @throws Exception
+     */
     public function delete($uri, $options = [])
     {
         return $this->exec(array_merge(['delete' => $uri], $options));
     }
 
+    /**
+     * @param $param
+     * @param $value
+     */
     public function setHttpParam($param, $value)
     {
-        self::$_defaultParams[$param] = $value;
+        self::$defaultParams[$param] = $value;
     }
 
-    private function getArrayValue($array, $key)
+    /**
+     * @param $array
+     * @param $key
+     *
+     * @return bool
+     */
+    private function _getArrayValue($array, $key)
     {
         if (array_key_exists($key, $array)) {
             return $array[$key];
