@@ -12,7 +12,7 @@ class RestClient
     /**
      *
      */
-    const VERB_ARRAY = [
+    protected static $verbArray = [
         'get'    => 'GET',
         'post'   => 'POST',
         'put'    => 'PUT',
@@ -101,7 +101,7 @@ class RestClient
     {
         $method = key($options);
         $requestPath = reset($options);
-        $verb = self::VERB_ARRAY[$method];
+        $verb = self::$verbArray[$method];
 
         $headers = self::_getArrayValue($options, 'headers');
         $url_query = self::_getArrayValue($options, 'url_query');
